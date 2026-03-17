@@ -1,0 +1,63 @@
+{
+  "entities": {
+    "Unit": {
+      "title": "Real Estate Unit",
+      "description": "A single property unit with 3D details and sales data.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the unit." },
+        "projectId": { "type": "string", "description": "ID of the project this unit belongs to." },
+        "name": { "type": "string", "description": "Name or number of the unit (e.g., Penthouse A)." },
+        "price": { "type": "number", "description": "Asking price of the unit." },
+        "status": { "type": "string", "enum": ["available", "reserved", "sold"], "description": "Current sales status." },
+        "area": { "type": "number", "description": "Total area in square meters." },
+        "bedrooms": { "type": "integer", "description": "Number of bedrooms." },
+        "bathrooms": { "type": "integer", "description": "Number of bathrooms." },
+        "description": { "type": "string", "description": "Detailed description of the unit." },
+        "modelUrl": { "type": "string", "description": "URL to the 3D model (GLB/GLTF)." },
+        "floor": { "type": "integer", "description": "Floor number." },
+        "amenities": { "type": "array", "items": { "type": "string" }, "description": "List of amenities." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp." }
+      },
+      "required": ["name", "price", "status", "area", "projectId"]
+    },
+    "Project": {
+      "title": "Real Estate Project",
+      "description": "A collection of units with its own 3D model and data source.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string", "description": "Name of the project." },
+        "modelUrl": { "type": "string", "description": "URL to the project's 3D model." },
+        "googleSheetId": { "type": "string", "description": "ID of the Google Sheet for this project." },
+        "googleApiKey": { "type": "string", "description": "API Key for Google Sheets access." },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "modelUrl"]
+    },
+    "Settings": {
+      "title": "App Settings",
+      "description": "Global configuration for the 3D viewer and CRM.",
+      "type": "object",
+      "properties": {
+        "projectName": { "type": "string" },
+        "primaryColor": { "type": "string" },
+        "logoUrl": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "projects": {
+      "schema": "Project",
+      "description": "Collection of real estate projects."
+    },
+    "units": {
+      "schema": "Unit",
+      "description": "Collection of real estate units."
+    },
+    "settings": {
+      "schema": "Settings",
+      "description": "Global app settings."
+    }
+  }
+}

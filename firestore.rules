@@ -1,0 +1,88 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Collection: units
+// Document ID: auto-generated
+// Fields:
+//   - name: string (required)
+//   - price: number (required)
+//   - status: string (required, enum: available, reserved, sold)
+//   - area: number (required)
+//   - bedrooms: number
+//   - bathrooms: number
+//   - description: string
+//   - modelUrl: string
+//   - floor: number
+//   - amenities: list
+//   - updatedAt: timestamp
+//
+// Collection: settings
+// Document ID: global
+// Fields:
+//   - projectName: string
+//   - primaryColor: string
+//   - logoUrl: string
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         request.auth.token.email == "architect.basel@gmail.com");
+    }
+
+    function isValidUnit(data) {
+      return data.name is string && data.name.size() > 0 &&
+             data.price is number && data.price >= 0 &&
+             data.status in ['available', 'reserved', 'sold'] &&
+             data.area is number && data.area > 0;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /units/{unitId} {
+        allow read: if true;
+        allow create: if isAdmin() && isValidUnit(request.resource.data);
+        allow update: if isAdmin() && isValidUnit(request.resource.data);
+        allow delete: if isAdmin();
+      }
+    }
+
+    // Keep top-level units for backward compatibility or if used elsewhere
+    match /units/{unitId} {
+      allow read: if true; 
+      allow create: if isAdmin() && isValidUnit(request.resource.data);
+      allow update: if isAdmin() && isValidUnit(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+  }
+}
